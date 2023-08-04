@@ -1,7 +1,6 @@
 #include "solais_serial/solais_serial_legacy.hpp"
 #include <bits/stdint-uintn.h>
 #include <rclcpp/logging.hpp>
-#include <solais_interfaces/msg/detail/gimbal_pose__struct.hpp>
 #include <vector>
 #include "rclcpp/qos.hpp"
 #include "serial_driver/serial_port.hpp"
