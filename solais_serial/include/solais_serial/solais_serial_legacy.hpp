@@ -3,12 +3,14 @@
 #define SOLAIS_SERIAL
 
 #include <bits/stdint-uintn.h>
+#include <rclcpp/publisher.hpp>
 #include <rclcpp/subscription.hpp>
 #include "rclcpp/rclcpp.hpp"
 #include "serial_driver/serial_driver.hpp"
 #include "serial_driver/serial_port.hpp"
 #include "auto_aim_interfaces/msg/target.hpp"
 #include "rmoss_projectile_motion/gimbal_transform_tool.hpp"
+#include "solais_interfaces/msg/gimbal_pose.hpp"
 
 #include <tf2_ros/transform_broadcaster.h>
 #include <visualization_msgs/msg/marker.hpp>
@@ -29,27 +31,19 @@ public:
 private:
   void declareParameters();
 
-  void receivePackage();
-
   void sendPackage(const auto_aim_interfaces::msg::Target::SharedPtr msg);
-
-  void reopenPort();
 
   rclcpp::Node::SharedPtr node_;
 
-  std::unique_ptr<IoContext> io_context_;
-  std::string device_name_;
-  long baud_rate_;
-  std::shared_ptr<drivers::serial_driver::SerialPortConfig> device_config_;
-  std::shared_ptr<drivers::serial_driver::SerialDriver> serial_driver_;
+  // std::string device_name_;
+  // long baud_rate_;
+  // std::shared_ptr<drivers::serial_driver::SerialPortConfig> device_config_;
   rclcpp::Subscription<auto_aim_interfaces::msg::Target>::SharedPtr armors_sub_;
-  double timestamp_offset_ = 0;
-  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+  rclcpp::Publisher<solais_interfaces::msg::GimbalPose>::SharedPtr gimbal_pose_pub_;
 
   // Debug
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
   visualization_msgs::msg::Marker aiming_point_;
-  std::thread receive_thread_;
 
 
   // For projectile prediction
@@ -69,43 +63,43 @@ private:
 };
 
 
-struct __attribute__((packed, aligned(1))) SentPackage
-{
-  uint8_t sof = 0x5A;  // Start of frame
-  float yaw;
-  float pitch;
-  uint8_t crc8;
-};
+// struct __attribute__((packed, aligned(1))) SentPackage
+// {
+//   uint8_t sof = 0x5A;  // Start of frame
+//   float yaw;
+//   float pitch;
+//   uint8_t crc8;
+// };
 
-struct __attribute__((packed, aligned(1))) ReceivedPackage
-{
-  uint8_t sof = 0x5A;  // Start of frame
-  float yaw;  // Yaw -180 to 180, counterclockwise is positive
-  float pitch;  // Pitch -20 to 5, going up is negative
-  uint16_t crc16;
-};
+// struct __attribute__((packed, aligned(1))) ReceivedPackage
+// {
+//   uint8_t sof = 0x5A;  // Start of frame
+//   float yaw;  // Yaw -180 to 180, counterclockwise is positive
+//   float pitch;  // Pitch -20 to 5, going up is negative
+//   uint16_t crc16;
+// };
 
-enum class CommandID : uint8_t
-{
-  VISION_CONTROL_CMD_ID = 0,
-  CMD_ID_COUNT
-};
+// enum class CommandID : uint8_t
+// {
+//   VISION_CONTROL_CMD_ID = 0,
+//   CMD_ID_COUNT
+// };
 
-inline std::vector<uint8_t> Pak2Vector(const SentPackage & data)
-{
-  std::vector<uint8_t> package(sizeof(SentPackage));
-  std::copy(
-    reinterpret_cast<const uint8_t *>(&data),
-    reinterpret_cast<const uint8_t *>(&data) + sizeof(SentPackage), package.begin());
-  return package;
-}
+// inline std::vector<uint8_t> Pak2Vector(const SentPackage & data)
+// {
+//   std::vector<uint8_t> package(sizeof(SentPackage));
+//   std::copy(
+//     reinterpret_cast<const uint8_t *>(&data),
+//     reinterpret_cast<const uint8_t *>(&data) + sizeof(SentPackage), package.begin());
+//   return package;
+// }
 
-inline ReceivedPackage Vector2Pak(const std::vector<uint8_t> & data)
-{
-  ReceivedPackage package;
-  std::copy(data.begin(), data.end(), reinterpret_cast<uint8_t *>(&package));
-  return package;
-}
+// inline ReceivedPackage Vector2Pak(const std::vector<uint8_t> & data)
+// {
+//   ReceivedPackage package;
+//   std::copy(data.begin(), data.end(), reinterpret_cast<uint8_t *>(&package));
+//   return package;
+// }
 
 }  // namespace solais_serial
 

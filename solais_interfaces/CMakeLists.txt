@@ -12,6 +12,7 @@ ament_auto_find_build_dependencies()
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Armor.msg"
   "msg/Armors.msg"
+  "msg/GimbalPose.msg"
   "srv/GetCameraInfo.srv"
 DEPENDENCIES
   builtin_interfaces

@@ -33,6 +33,7 @@ ament_target_dependencies(solais_serial_legacy
   tf2_ros
   tf2_geometry_msgs
   visualization_msgs
+  solais_interfaces
 )
 
 
